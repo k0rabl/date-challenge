@@ -1,7 +1,8 @@
-import {source} from  './source.js'
+import {source, source2} from  './source.js'
 import moment from 'moment'
 
-const {order, days} = source
+// const {order, days} = source
+const {order, days} = source2
 
 
 const convertDate = (time) => {
@@ -19,17 +20,29 @@ const convertDate = (time) => {
 }
 
 
-const newObj = order.reduce((accum, elem) => {
+const newObj = order.reduce((accum, elem, index) => {
   const start = convertDate(days?.[elem]?.start)
   const end = convertDate(days?.[elem]?.end)
   const name = `${start} - ${end}`
 
-  !accum[name]
-    ? accum[name] = [elem]
-    : accum[name].push(elem)
+  if(accum[name]){
+    const period = accum[name]
+    const prev = order.indexOf(period[period.length - 1])
+
+    index - prev === 1
+      ? accum[name].push(elem)
+      : accum[name + index] = [elem]
+  }  else accum[name] = [elem]
+
+  // accum[name] 
+  //   ? accum[name].push(elem)
+  //   : accum[name] = [elem]
+
 
   return accum
 }, {})
+
+console.log('newObj:', newObj);
 
 let string = 'Period 1 \n'
 for (const key in newObj) {
@@ -37,21 +50,17 @@ for (const key in newObj) {
     const element = newObj[key];
 
     if (key.includes('Invalid date')) {
-      string += `${element[0]}: Day off \n`
+      string += `${element[0].slice(0, 3)}: Day off \n`
       continue
     }
     
     if(element.length > 1){
-      string += `${element[0]} - ${element[element.length - 1]}: ${key} \n`
+      string += `${element[0].slice(0, 3)} - ${element[element.length - 1].slice(0, 3)}: ${key} \n`
     } else {
-      string += `${element[0]}: ${key} \n`
+      string += `${element[0].slice(0, 3)}: ${key} \n`
     }
   }
 }
-
-console.log(
-  'moment: ', convertDate(10.5)
-);
 
 console.log(string);
 /* 
