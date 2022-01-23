@@ -1,20 +1,59 @@
 import {source} from  './source.js'
+import moment from 'moment'
 
 const {order, days} = source
 
-const time = {
-  start: 0, 
-  end: 0
+
+const convertDate = (time) => {
+  const hours = String(time).split('.')[0]
+  const fraction = String(time).split('.')[1]
+
+  const seconds = fraction > 0 
+    ? fraction > 9 ? fraction / 5 * 3 : fraction * 10 / 5 * 3
+    : 0
+
+  const date = new Date()
+  date.setHours(hours, seconds)
+
+  return moment(date).format('LT')
 }
 
-order.map((element, index) => {
-  if(days?.[element]?.start === time.start && days?.[element]?.end === time.end ){
-    console.log(element, ':', time);
-  }
 
-  time.start = days?.[element]?.start
-  time.end =  days?.[element]?.end  
-})
+const newObj = order.reduce((accum, elem) => {
+  const start = convertDate(days?.[elem]?.start)
+  const end = convertDate(days?.[elem]?.end)
+  const name = `${start} - ${end}`
+
+  !accum[name]
+    ? accum[name] = [elem]
+    : accum[name].push(elem)
+
+  return accum
+}, {})
+
+let string = 'Period 1 \n'
+for (const key in newObj) {
+  if (Object.hasOwnProperty.call(newObj, key)) {
+    const element = newObj[key];
+
+    if (key.includes('Invalid date')) {
+      string += `${element[0]}: Day off \n`
+      continue
+    }
+    
+    if(element.length > 1){
+      string += `${element[0]} - ${element[element.length - 1]}: ${key} \n`
+    } else {
+      string += `${element[0]}: ${key} \n`
+    }
+  }
+}
+
+console.log(
+  'moment: ', convertDate(10.5)
+);
+
+console.log(string);
 /* 
 
   Period 1
