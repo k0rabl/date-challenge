@@ -50,25 +50,22 @@ for (const key in data) {
 
     string += `Period ${key[key.length - 1]} \n`
 
-    for (const key in dates) {
-      if (Object.hasOwnProperty.call(dates, key)) {
-        const date = dates[key];
-        const firstDay = date[0].slice(0, 3)
-        const lastDay = date[date.length - 1].slice(0, 3)
+    for (const time in dates) {
+      const date = dates[time];
+      const firstDay = date[0].slice(0, 3)
+      const lastDay = date[date.length - 1].slice(0, 3)
 
-        if(date.length > 1){
-          string += `${firstDay} - ${lastDay}: ${key.includes('Invalid date') ? 'Day off' : key} \n`
-        } else {
-          string += `${firstDay}: ${key.includes('Invalid date') ? 'Day off' : key} \n`
-        }
-      }
+      const days = lastDay !== firstDay 
+        ? `${firstDay} - ${lastDay}` 
+        : lastDay
+
+      string += `${days}: ${time.includes('Invalid date') ? 'Day off' : time} \n`
     }
-
     string += '\n'
   }
 }
 
-console.log(string);
+console.log(string)
 
 /* 
   Period 1
