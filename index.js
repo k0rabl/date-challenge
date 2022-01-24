@@ -1,8 +1,5 @@
-import {source, source2} from  './source.js'
+import * as data from  './source.js'
 import moment from 'moment'
-
-// const {order, days} = source
-const {order, days} = source2
 
 
 const convertDate = (time) => {
@@ -19,46 +16,64 @@ const convertDate = (time) => {
   return moment(date).format('LT')
 }
 
+const sortDates = ({order, days}) => {
+  return order.reduce((accum, elem, index) => {
+    const start = convertDate(days?.[elem]?.start)
+    const end = convertDate(days?.[elem]?.end)
+    const name = `${start} - ${end}`
+  
+    if(accum[name] || accum[name + (index - 1)]){
+      if (accum[name + (index - 1)]){
+  
+        const period = accum[name + (index - 1)]
+        const prev = order.indexOf(period[period.length - 1])
+  
+        index - prev === 1
+          ? accum[name + (index - 1)].push(elem)
+          : accum[name + index] = [elem]
+      } else if(accum[name]) {
+        const period = accum[name]
+        const prev = order.indexOf(period[period.length - 1])
+      
+        index - prev === 1
+          ? accum[name].push(elem)
+          : accum[name + index] = [elem]
+  
+      }
+    }  else accum[name] = [elem]
+  
+    return accum
+  }, {})
+}
 
-const newObj = order.reduce((accum, elem, index) => {
-  const start = convertDate(days?.[elem]?.start)
-  const end = convertDate(days?.[elem]?.end)
-  const name = `${start} - ${end}`
+let string = ''
+for (const key in data) {
+  if (Object.hasOwnProperty.call(data, key)) {
+    const element = data[key];
 
-  if(accum[name]){
-    const period = accum[name]
-    const prev = order.indexOf(period[period.length - 1])
+    const dates = sortDates(element)
 
-    index - prev === 1
-      ? accum[name].push(elem)
-      : accum[name + index] = [elem]
-  }  else accum[name] = [elem]
+    string += `${key} \n`
 
-  // accum[name] 
-  //   ? accum[name].push(elem)
-  //   : accum[name] = [elem]
-
-
-  return accum
-}, {})
-
-console.log('newObj:', newObj);
-
-let string = 'Period 1 \n'
-for (const key in newObj) {
-  if (Object.hasOwnProperty.call(newObj, key)) {
-    const element = newObj[key];
-
-    if (key.includes('Invalid date')) {
-      string += `${element[0].slice(0, 3)}: Day off \n`
-      continue
-    }
+    for (const key in dates) {
+      if (Object.hasOwnProperty.call(dates, key)) {
+        const element = dates[key];
     
-    if(element.length > 1){
-      string += `${element[0].slice(0, 3)} - ${element[element.length - 1].slice(0, 3)}: ${key} \n`
-    } else {
-      string += `${element[0].slice(0, 3)}: ${key} \n`
+        if (key.includes('Invalid date')) {
+          string += `${element[0].slice(0, 3)}: Day off \n`
+          continue
+        }
+        
+        if(element.length > 1){
+          string += `${element[0].slice(0, 3)} - ${element[element.length - 1].slice(0, 3)}: ${key} \n`
+        } else {
+          string += `${element[0].slice(0, 3)}: ${key} \n`
+        }
+      }
     }
+
+    string += '\n \n'
+    
   }
 }
 
