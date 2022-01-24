@@ -1,4 +1,4 @@
-export const source = {
+export const source1 = {
   order: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
   days: {
     Monday: {

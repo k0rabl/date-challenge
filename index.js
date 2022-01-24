@@ -1,13 +1,16 @@
 import * as data from  './source.js'
 import moment from 'moment'
 
+let string = ''
 
-const convertDate = (time) => {
+const convertDate = time => {
   const hours = String(time).split('.')[0]
   const fraction = String(time).split('.')[1]
 
-  const seconds = fraction > 0 
-    ? fraction > 9 ? fraction / 5 * 3 : fraction * 10 / 5 * 3
+  const seconds = !!fraction
+    ? fraction > 9 
+      ? fraction / 5 * 3 
+      : fraction * 10 / 5 * 3
     : 0
 
   const date = new Date()
@@ -20,66 +23,54 @@ const sortDates = ({order, days}) => {
   return order.reduce((accum, elem, index) => {
     const start = convertDate(days?.[elem]?.start)
     const end = convertDate(days?.[elem]?.end)
+    
     const name = `${start} - ${end}`
+    let exist = accum[name]
+    
+    if (accum[name + (index - 1)]) 
+      exist = accum[name + (index - 1)]
   
-    if(accum[name] || accum[name + (index - 1)]){
-      if (accum[name + (index - 1)]){
-  
-        const period = accum[name + (index - 1)]
-        const prev = order.indexOf(period[period.length - 1])
-  
-        index - prev === 1
-          ? accum[name + (index - 1)].push(elem)
-          : accum[name + index] = [elem]
-      } else if(accum[name]) {
-        const period = accum[name]
-        const prev = order.indexOf(period[period.length - 1])
+    if(exist){
+      const prev = order.indexOf(exist[exist.length - 1])
+
+      index - prev === 1
+        ? exist.push(elem)
+        : accum[name + index] = [elem]
       
-        index - prev === 1
-          ? accum[name].push(elem)
-          : accum[name + index] = [elem]
-  
-      }
     }  else accum[name] = [elem]
   
     return accum
   }, {})
 }
 
-let string = ''
 for (const key in data) {
   if (Object.hasOwnProperty.call(data, key)) {
-    const element = data[key];
+    const period = data[key];
+    const dates = sortDates(period)
 
-    const dates = sortDates(element)
-
-    string += `${key} \n`
+    string += `Period ${key[key.length - 1]} \n`
 
     for (const key in dates) {
       if (Object.hasOwnProperty.call(dates, key)) {
-        const element = dates[key];
-    
-        if (key.includes('Invalid date')) {
-          string += `${element[0].slice(0, 3)}: Day off \n`
-          continue
-        }
-        
-        if(element.length > 1){
-          string += `${element[0].slice(0, 3)} - ${element[element.length - 1].slice(0, 3)}: ${key} \n`
+        const date = dates[key];
+        const firstDay = date[0].slice(0, 3)
+        const lastDay = date[date.length - 1].slice(0, 3)
+
+        if(date.length > 1){
+          string += `${firstDay} - ${lastDay}: ${key.includes('Invalid date') ? 'Day off' : key} \n`
         } else {
-          string += `${element[0].slice(0, 3)}: ${key} \n`
+          string += `${firstDay}: ${key.includes('Invalid date') ? 'Day off' : key} \n`
         }
       }
     }
 
-    string += '\n \n'
-    
+    string += '\n'
   }
 }
 
 console.log(string);
-/* 
 
+/* 
   Period 1
   Mon: 10:00 AM - 7:30 PM
   Tue - Thu: 10:45 AM - 11:30 PM
